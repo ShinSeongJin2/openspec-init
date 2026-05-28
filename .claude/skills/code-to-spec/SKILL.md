@@ -36,10 +36,9 @@ Read these before creating or changing outputs:
 - `openspec/config.yaml`: repository-specific OpenSpec context and rules. Its constraints override generic advice in this skill.
 - `TEMPLATES.md`: required planning and spec templates.
 - Existing `openspec/specs/*/spec.md`, if any: preserve and merge existing requirements instead of overwriting them.
-- Relevant OpenSpec skills when needed:
-  - `../openspec-explore/SKILL.md` for investigative stance and ambiguity handling.
-  - `../openspec-propose/SKILL.md` for OpenSpec artifact discipline.
-  - `../openspec-sync-specs/SKILL.md` for main-spec merge behavior.
+- OpenSpec CLI documentation or help output when validation commands differ by installed version.
+
+This repository intentionally does not bundle upstream OpenSpec skills or commands. Apply the OpenSpec artifact discipline directly from this skill, `openspec/config.yaml`, and the local templates instead of depending on `openspec-*` skill files.
 
 ## Workflow
 

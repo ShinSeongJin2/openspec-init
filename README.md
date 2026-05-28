@@ -1,7 +1,6 @@
-# OpenSpec Init — Claude Code Skill Pack
+# OpenSpec Init — Custom Claude Code Skill Pack
 
-> 기존 코드에서 OpenSpec 스펙을 만들고, 그 스펙으로 E2E 테스트와 DOCX 사용자 매뉴얼까지 이어서 생성하는 Claude Code용 skill pack.
-> OpenSpec을 처음 도입하는 프로젝트에 `openspec/`와 `.claude/` 폴더를 복사해 바로 사용할 수 있도록 구성했습니다.
+> 기존 코드에서 OpenSpec 스펙을 만들고, 그 스펙으로 E2E 테스트와 DOCX 사용자 매뉴얼까지 이어서 생성하는 커스텀 Claude Code skill pack.
 
 ---
 
@@ -26,7 +25,7 @@ Claude Code를 어느 정도 사용해 본 개발자가 **Spec-Driven Developmen
 
 ## 설치
 
-이 저장소는 OpenSpec 자체를 대체하지 않습니다. 먼저 OpenSpec CLI가 설치되어 있어야 합니다.
+이 저장소는 OpenSpec 자체나 OpenSpec 기본 스킬/커맨드를 대체하지 않습니다. 이 pack의 스킬은 OpenSpec CLI를 호출하거나 OpenSpec 프로젝트 구조를 전제로 하므로, 먼저 OpenSpec CLI가 설치되어 있어야 합니다.
 
 ### 1. OpenSpec 설치
 
@@ -42,9 +41,12 @@ npm install -g @fission-ai/openspec@latest
 openspec --version
 ```
 
-### 2. 대상 프로젝트 초기화
+### 2. 대상 프로젝트 OpenSpec 구조 준비
 
-처음 사용하는 프로젝트라면 OpenSpec 기본 구조를 먼저 초기화합니다.
+대상 프로젝트가 아직 OpenSpec 구조를 갖고 있지 않다면 둘 중 하나를 선택합니다.
+
+- OpenSpec 기본 구조가 필요하면 대상 프로젝트에서 `openspec init`을 실행합니다.
+- 이 pack의 한국어 작성 규칙과 산출물 배치 규칙만 적용하려면 이 저장소의 `openspec/` 폴더를 복사합니다.
 
 ```bash
 cd your-project
@@ -53,27 +55,35 @@ openspec init
 
 이미 OpenSpec 구조가 있는 프로젝트라면 기존 `openspec/` 내용을 확인한 뒤 병합 방식으로 적용하세요. 기존 스펙을 덮어쓰면 이전 요구사항을 잃을 수 있습니다.
 
-### 3. 이 저장소의 폴더 복사
+### 3. 커스텀 스킬 복사
 
-이 저장소의 핵심은 다음 두 폴더입니다.
+이 저장소에서 대상 프로젝트에 복사할 핵심 항목은 다음입니다.
 
 ```text
 openspec/
-.claude/
+.claude/skills/code-to-spec/
+.claude/skills/e2e-tests/
+.claude/skills/docx-user-manual/
 ```
 
-대상 프로젝트 루트로 그대로 복사합니다.
+대상 프로젝트 루트로 복사합니다.
 
 ```bash
 cp -R openspec your-project/
-cp -R .claude your-project/
+mkdir -p your-project/.claude/skills
+cp -R .claude/skills/code-to-spec your-project/.claude/skills/
+cp -R .claude/skills/e2e-tests your-project/.claude/skills/
+cp -R .claude/skills/docx-user-manual your-project/.claude/skills/
 ```
 
 Windows PowerShell 예시는 다음과 같습니다.
 
 ```powershell
 Copy-Item -Recurse -Force .\openspec C:\path\to\your-project\
-Copy-Item -Recurse -Force .\.claude C:\path\to\your-project\
+New-Item -ItemType Directory -Force C:\path\to\your-project\.claude\skills
+Copy-Item -Recurse -Force .\.claude\skills\code-to-spec C:\path\to\your-project\.claude\skills\
+Copy-Item -Recurse -Force .\.claude\skills\e2e-tests C:\path\to\your-project\.claude\skills\
+Copy-Item -Recurse -Force .\.claude\skills\docx-user-manual C:\path\to\your-project\.claude\skills\
 ```
 
 복사 후 대상 프로젝트의 구조는 대략 다음과 같습니다.
@@ -90,7 +100,17 @@ your-project/
 └── ...
 ```
 
-**중요**: `.claude/skills/code-to-spec/SKILL.md`, `.claude/skills/e2e-tests/SKILL.md`, `.claude/skills/docx-user-manual/SKILL.md`가 대상 프로젝트 안에 있어야 Claude Code가 스킬을 사용할 수 있습니다.
+**중요**: 이 저장소는 `.claude/commands`, `openspec-*` 기본 스킬, `docx` 기본 스킬을 포함하지 않습니다. OpenSpec 기본 기능은 설치된 OpenSpec CLI와 upstream 자료를 그대로 사용하고, 이 pack은 `code-to-spec`, `e2e-tests`, `docx-user-manual`만 추가합니다.
+
+### 4. DOCX 스킬 의존성 준비
+
+`docx-user-manual`은 표준 `docx` 문서 스킬을 확장하는 방식으로 작성되어 있습니다. Claude Code에 document skills plugin이 없다면 다음 명령으로 설치하세요.
+
+```text
+/plugin install document-skills@anthropic-agent-skills
+```
+
+설치 후 스킬이 바로 보이지 않으면 `/reload-plugins`를 실행하거나 Claude Code를 다시 시작합니다. 하네스가 skill metadata의 `extends: docx` 힌트를 지원하면 의존 스킬을 자동으로 해석할 수 있지만, 그렇지 않은 환경에서는 위 plugin 설치가 필요합니다.
 
 ---
 
@@ -401,11 +421,15 @@ SDD는 "코드를 먼저 만들고 나중에 문서화"하는 방식과 반대�
 
 **Q. OpenSpec을 설치하지 않고 이 폴더만 복사해도 되나요?**
 
-A. 권장하지 않습니다. 이 저장소는 OpenSpec 프로젝트 구조와 Claude Code 스킬을 제공하지만, `openspec validate`, `openspec init`, `openspec update` 같은 CLI 기능은 OpenSpec 설치가 필요합니다.
+A. 권장하지 않습니다. 대상 프로젝트를 `openspec init`으로 초기화하지 않는 것은 가능하지만, 이 pack의 스킬은 `openspec validate` 같은 CLI 기능을 활용하므로 OpenSpec CLI 자체는 설치되어 있어야 합니다.
 
 **Q. 기존 프로젝트에 이미 `.claude/` 폴더가 있으면 어떻게 하나요?**
 
-A. 폴더 전체를 덮어쓰기보다 `.claude/skills/code-to-spec`, `.claude/skills/e2e-tests`, `.claude/skills/docx-user-manual`을 기존 `.claude/skills/` 아래로 병합하세요.
+A. 폴더 전체를 덮어쓰기보다 `.claude/skills/code-to-spec`, `.claude/skills/e2e-tests`, `.claude/skills/docx-user-manual`만 기존 `.claude/skills/` 아래로 병합하세요. `.claude/commands`나 upstream OpenSpec 기본 스킬을 이 저장소에서 복사할 필요는 없습니다.
+
+**Q. `docx-user-manual`을 쓰려면 `.claude/skills/docx`도 복사해야 하나요?**
+
+A. 아닙니다. 이 저장소는 `docx` 기본 스킬을 포함하지 않습니다. Claude Code의 document skills plugin을 설치해 `docx` 스킬을 제공하거나, 프로젝트에서 이미 사용하는 DOCX 생성 도구를 사용하세요.
 
 **Q. `code-to-spec`에 여러 폴더를 전달할 수 있나요?**
 
@@ -425,18 +449,24 @@ A. 기본 규칙은 한국어입니다. API 경로, HTTP method, 필드명, 이�
 
 **Q. OpenSpec 업데이트는 어떻게 하나요?**
 
-A. 전역 패키지를 업데이트한 뒤 대상 프로젝트에서 OpenSpec 지침을 갱신합니다.
+A. OpenSpec CLI는 전역 패키지를 업데이트합니다. 이 저장소는 OpenSpec 기본 스킬/커맨드를 vendoring하지 않으므로, upstream OpenSpec skill pack을 덮어쓰는 별도 갱신 작업은 없습니다.
 
 ```bash
 npm install -g @fission-ai/openspec@latest
-openspec update
 ```
 
 ---
 
 ## 업데이트
 
-이 skill pack 자체를 최신으로 반영하려면 이 저장소에서 최신 `openspec/`와 `.claude/` 폴더를 다시 대상 프로젝트에 병합합니다.
+이 skill pack 자체를 최신으로 반영하려면 이 저장소에서 최신 `openspec/`와 커스텀 스킬 3개 폴더만 다시 대상 프로젝트에 병합합니다.
+
+```text
+openspec/
+.claude/skills/code-to-spec/
+.claude/skills/e2e-tests/
+.claude/skills/docx-user-manual/
+```
 
 기존 프로젝트에 이미 작성된 `openspec/specs/` 산출물이 있다면 덮어쓰기 전에 반드시 diff를 확인하세요. 특히 `openspec/config.yaml`은 프로젝트 규칙을 담고 있으므로, 대상 프로젝트에서 수정한 내용이 있다면 수동 병합을 권장합니다.
 
@@ -472,3 +502,5 @@ openspec/config.yaml
 ```
 
 `openspec/config.yaml`은 한국어 작성 규칙, feature-sized spec 규칙, spec-local 산출물 배치 규칙을 담고 있습니다. 각 스킬의 `SKILL.md`는 Claude Code가 해당 작업을 수행할 때 따라야 할 워크플로와 품질 게이트를 정의합니다.
+
+이 저장소에는 `.claude/commands`, `openspec-*` 기본 스킬, `.claude/skills/docx`가 포함되지 않습니다. 해당 기능은 OpenSpec CLI 또는 Claude Code document skills plugin 같은 upstream 설치본을 사용하세요.
