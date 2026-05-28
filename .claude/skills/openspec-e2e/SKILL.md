@@ -52,20 +52,21 @@ Do not add Docker images, Dockerfiles, or Compose app services for repository-ow
 
 **Workflow Gate Rule**: Execute the workflow as a dependency graph organized into Phases (see "Phases and Parallelization" below). Do not start a new Phase until the previous Phase's gate checklist passes. Within one Phase, items without dependencies on each other SHOULD be invoked in parallel as long as they do not contend on the same Docker container, local app process, port, or DB state. If a checklist item cannot pass because evidence is missing, infrastructure is unavailable, or the repository shape is ambiguous, stop at that step and tell the user what failed, what evidence was checked, and what decision or input is needed.
 
-## Repository E2E Memory and Reusable Scripts
+## Suite-Local Reuse and Lessons
 
-The repository keeps cross-suite E2E knowledge under `openspec/e2e/`:
+This pack intentionally does not install repository-global E2E memory or shared-script folders. Keep generated artifacts spec-local by default:
 
-- `openspec/e2e/memories/`: project-specific E2E knowledge that the skill itself does not capture — encountered pitfalls, infrastructure quirks, build/coverage workarounds. Each memory file is a small Markdown document with frontmatter (`name`, `description`, `applies-to`, `last-verified`, `metadata.type`). `index.md` lists every memory in one line per entry. Treat this exactly like Claude's personal memory system: short index, semantic file organization, `[[wiki-link]]` between memories, freshness check before applying.
-- `openspec/e2e/scripts/`: reusable code artifacts (mock servers, coverage helpers, build wrappers) that more than one suite consumes. Suite-specific scripts stay under `openspec/specs/<spec-name>/e2e/scripts/`. Promote a script to `openspec/e2e/scripts/` only after it has been written twice and the second copy is essentially the first with minor differences — do not preemptively generalize.
-
-Reading these in Phase A and writing back in Phase F is mandatory. The skill stays generic; project-local lessons accumulate here. If `openspec/e2e/memories/` or `openspec/e2e/scripts/` do not yet exist, create them in Phase F when there is something worth saving.
+- Suite-specific scripts, mock servers, coverage helpers, build wrappers, seeds, Docker overrides, scenario documents, reports, screenshots, and execution notes belong under `openspec/specs/<spec-name>/e2e/`.
+- Before writing a helper from scratch, survey existing suites under `openspec/specs/*/e2e/` for reusable patterns, fixture helpers, login flows, mock services, seed conventions, and coverage scripts.
+- Reuse by copying and adapting only when the existing suite-local artifact fits the new spec. Do not create `openspec/e2e/memories/` or `openspec/e2e/scripts/` as part of this workflow.
+- Capture non-obvious lessons in the suite execution summary so future work can discover them from the spec-local evidence. Do not maintain a separate global memory index.
+- If the same helper pattern appears across multiple suites, record the duplication and recommended future extraction in the execution summary; keep the current change suite-local unless the user explicitly asks for a shared utility.
 
 ## Phases and Parallelization
 
 The numbered workflow below is a dependency graph, not a strict linear sequence. Across phases, do not start a phase until the previous phase's gate checklist passes. Inside one phase, items without dependencies on each other SHOULD be invoked in a single message using multiple parallel tool calls.
 
-- **Phase A (Plan)**: Steps 1–2. Sequential — Step 2 reads Step 1's output. Step 1 includes reading `openspec/e2e/memories/index.md` and relevant memories.
+- **Phase A (Plan)**: Steps 1–2. Sequential — Step 2 reads Step 1's output.
 - **Phase B (Runtime Plan + Infra)**: Steps 3–4. Sequential — Step 4 builds on Step 3's service-graph discovery and infrastructure/application classification.
 - **Phase C (Boot + Sanity)**: Step 5. Sequential — infrastructure containers start first, then source-run app services.
 - **Phase D (Tests)**: Step 6 plus the Playwright execution part of Step 7. The Playwright run must complete before Phase E starts.
@@ -75,7 +76,7 @@ The numbered workflow below is a dependency graph, not a strict linear sequence.
   - Backend coverage recollection (re-runs or restarts the owning backend source process under coverage.py / c8 / JaCoCo)
   - Frontend coverage recollection (Playwright re-run with V8 coverage, or source-mapped rebuild)
   - The HTML report and `coverage-summary.json` write depend on all four completing.
-- **Phase F (Document + Capture Lessons)**: Step 9 — execution summary plus memory write-back and script promotion review.
+- **Phase F (Document + Capture Lessons)**: Step 9 — execution summary plus suite-local lesson and reuse notes.
 
 **Shared-resource rule**: if two parallel candidates touch the same container, local app process, port, DB row, or coverage data directory, serialize them. The classic conflict is "backend coverage recollection restarts the completion backend process while Playwright is still running against it" — that must be sequential. Note in the execution summary which steps were combined and which shared resources were respected.
 
@@ -93,12 +94,11 @@ Read these files before creating or changing E2E outputs:
 
 ## Workflow
 
-1. **Read the contract, specs, and project E2E memory** (Phase A)
+1. **Read the contract, specs, and reusable suite evidence** (Phase A)
    - Read every referenced `spec.md` before designing tests.
    - Read [OUTPUT_CONTRACT.md](OUTPUT_CONTRACT.md), [TEMPLATES.md](TEMPLATES.md), [COVERAGE_HTML_TEMPLATE.html](COVERAGE_HTML_TEMPLATE.html), and the validator contract before creating outputs.
-   - Read `openspec/e2e/memories/index.md` if it exists. For each memory file whose `applies-to` frontmatter matches this spec's stack (backend language/framework, frontend framework, database, special dependencies like mem0/pgvector, build/coverage tool), read the memory file. Before applying a memory, verify the referenced files, commands, image tags are still valid — memories rot. If you can't verify a referenced fact, treat the memory as a hint and check the current state instead.
-   - Skim `openspec/e2e/scripts/` (or its `README.md`) for reusable mocks, coverage helpers, or build wrappers that may fit this suite. Prefer reusing or extending these scripts to writing new ones; only write a suite-local script when no shared script fits.
-   - Survey already-existing E2E suites under `openspec/specs/*/e2e/` for fixtures, helper functions, login flows, mock services, and seed patterns that can be reused. Record the reusable items in the coverage matrix's `재사용 산출물` section.
+   - Survey already-existing E2E suites under `openspec/specs/*/e2e/` for fixtures, helper functions, login flows, mock services, seed patterns, coverage helpers, build wrappers, and execution-summary lessons that can be reused. Verify referenced paths, commands, image tags, and assumptions against the current repository before applying them.
+   - Record reusable suite-local items in the coverage matrix's `재사용 산출물` section, including the source suite and what was verified.
    - If referenced OpenSpec content contains English prose, translate the human-readable requirement/scenario meaning into Korean in E2E outputs while preserving exact contract identifiers.
    - Keep public API paths, request/response fields, streaming events, and user-visible labels exact.
    - Determine the suite slug from the spec set, preserving the exact service-prefixed spec ID when the source spec uses `<microservice>_<domain>-<feature>` or `<microservice>_<feature>`.
@@ -111,9 +111,7 @@ Read these files before creating or changing E2E outputs:
      - [ ] Every referenced `spec.md` and related change artifact has been read.
      - [ ] Required output contract, templates, and validator behavior are understood.
      - [ ] The coverage HTML report template is understood.
-     - [ ] `openspec/e2e/memories/index.md` has been read (or its absence noted). Memories with matching `applies-to` have been read and their freshness checked.
-     - [ ] `openspec/e2e/scripts/` has been surveyed for reusable artifacts.
-     - [ ] Existing E2E suites have been surveyed for reusable fixtures/helpers/mocks; reusable items are listed for inclusion in the coverage matrix.
+     - [ ] Existing E2E suites have been surveyed for reusable fixtures/helpers/mocks/scripts/lessons, and reusable items are listed for inclusion in the coverage matrix.
      - [ ] Human-readable OpenSpec prose has been represented in Korean in E2E outputs.
      - [ ] Suite slug decision is documented.
      - [ ] The suite slug preserves the source spec ID, including service/domain/feature separators.
@@ -315,22 +313,19 @@ Read these files before creating or changing E2E outputs:
      - [ ] `spec-coverage-report.html` exists under `e2e/results/` and follows the HTML template.
      - [ ] AI judgment explains sufficiency, weak spots, and concrete additions for insufficient coverage.
 
-9. **Document usage and capture lessons** (Phase F)
+9. **Document usage and capture suite-local lessons** (Phase F)
    - Write or update the suite execution summary using [TEMPLATES.md](TEMPLATES.md).
    - Include paths for scenarios, tests, Docker files, seed files, Sanity Check output, result JSON/HTML, screenshots, trace files, coverage XML/HTML reports, `coverage-summary.json`, `spec-coverage-report.html`, and validation command output.
    - Include a screenshot map that links each scenario checkpoint to its screenshot file and Korean manual caption.
    - Note in the execution summary which Phase E steps were run in parallel and which shared resources were respected.
-   - **Capture project E2E lessons.** Review what cost time in this suite. If a non-obvious pitfall, workaround, or environment quirk cost more than ~30 minutes AND a future agent could not derive it from reading the code, add a memory under `openspec/e2e/memories/`:
-     - Create the memory file with frontmatter `name`, `description`, `applies-to`, `last-verified`, and `metadata.type` (`pitfall`, `quirk`, `workaround`, `reference`).
-     - Add a one-line pointer to `openspec/e2e/memories/index.md`.
-     - Body should explain WHY the issue happens, WHAT works, and HOW TO APPLY (when triggered, when to skip).
-     - Link related memories with `[[memory-name]]`.
-     - Do NOT log routine choices, well-known commands, or facts derivable from `git log` / source code.
-   - **Consider script promotion.** If you wrote a script for this suite (mock server, coverage helper, build wrapper) and a similar one already exists in another suite under `openspec/specs/*/e2e/scripts/`, promotion to `openspec/e2e/scripts/` becomes worthwhile. Rules:
-     - Promote only after the second usage (a "rule of two").
-     - Generalize only the parts that are truly common; suite-specific data (canned responses, fixture content, selectors) stay under the suite.
-     - Update `openspec/e2e/scripts/README.md` with a one-line description and the suites that consume it.
-     - When both call sites already work, refactor cautiously — do not break a passing suite to enable a shared script.
+   - **Capture suite-local lessons.** Review what cost time in this suite. If a non-obvious pitfall, workaround, or environment quirk cost more than ~30 minutes AND a future agent could not derive it from reading the code, add a short "재사용 메모" section to the execution summary:
+     - Explain WHY the issue happens, WHAT works, and HOW TO APPLY, including when to skip it.
+     - Include the affected stack or dependency tags in prose so future searches can find the note.
+     - Do NOT log routine choices, well-known commands, facts derivable from `git log` / source code, or information already covered by this skill, [OUTPUT_CONTRACT.md](OUTPUT_CONTRACT.md), or [TEMPLATES.md](TEMPLATES.md).
+   - **Consider reusable script patterns without creating global folders.** If you wrote a script for this suite and a similar one already exists in another suite under `openspec/specs/*/e2e/scripts/`, note the duplication and possible extraction in the execution summary:
+     - Identify the common logic and the scenario-specific data.
+     - Keep the working script under this suite's `e2e/scripts/` unless the user explicitly asks for a shared utility.
+     - When copying from another suite, adapt cautiously and rerun this suite's checks.
    - Step checklist:
      - [ ] Execution summary records the ordered workflow results, including Sanity Check and validation commands.
      - [ ] Execution summary records OpenSpec traceability, backend coverage, frontend coverage, and AI coverage judgment results.
@@ -338,8 +333,8 @@ Read these files before creating or changing E2E outputs:
      - [ ] Execution summary notes which Phase E steps were parallelized and which shared resources were serialized.
      - [ ] Scenario docs, execution summary, tests, seed/stub files, reports, coverage outputs, and screenshots are written under `openspec/specs/<spec-name>/e2e/`.
      - [ ] Known gaps or user-required follow-ups are explicit.
-     - [ ] If a non-obvious pitfall, workaround, or environment quirk cost >30 minutes, a memory has been added under `openspec/e2e/memories/` and `index.md` has been updated. If nothing met the bar, the execution summary states "no new memory captured" and why.
-     - [ ] If a script written for this suite duplicates one in another suite, promotion to `openspec/e2e/scripts/` has been considered and either applied or explicitly deferred with a reason.
+     - [ ] If a non-obvious pitfall, workaround, or environment quirk cost >30 minutes, the execution summary includes a "재사용 메모" entry. If nothing met the bar, the execution summary states that no new reusable lesson was captured and why.
+     - [ ] If a script written for this suite duplicates one in another suite, the execution summary notes whether a future shared utility is warranted; no `openspec/e2e/scripts/` folder has been created unless the user explicitly requested it.
      - [ ] The execution guide can be followed from a clean checkout.
 
 ## Common Pitfalls

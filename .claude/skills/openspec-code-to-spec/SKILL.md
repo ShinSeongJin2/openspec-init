@@ -33,17 +33,29 @@ Reverse-engineer existing source code into OpenSpec main specs. The output is no
 
 Read these before creating or changing outputs:
 
-- `openspec/config.yaml`: repository-specific OpenSpec context and rules. Its constraints override generic advice in this skill.
 - `TEMPLATES.md`: required planning and spec templates.
 - Existing `openspec/specs/*/spec.md`, if any: preserve and merge existing requirements instead of overwriting them.
 - OpenSpec CLI documentation or help output when validation commands differ by installed version.
 
-This repository intentionally does not bundle upstream OpenSpec skills or commands. Apply the OpenSpec artifact discipline directly from this skill, `openspec/config.yaml`, and the local templates instead of depending on `openspec-*` skill files.
+This repository intentionally does not bundle upstream OpenSpec skills, commands, or a project-level `openspec/config.yaml`. Apply the OpenSpec artifact discipline directly from this skill and the local templates instead of depending on `openspec-*` skill files.
+
+## Project OpenSpec Rules
+
+Apply these repository rules without requiring a separate OpenSpec config file:
+
+- Write all OpenSpec artifacts in Korean by default, including proposal, design, tasks, planning, specs, titles, descriptions, table text, checklists, Requirement names and bodies, Scenario names and steps.
+- Preserve exact technical identifiers only when needed: API paths and methods, request/response fields, event names, enum values, configuration keys, environment variables, SQL keywords, file paths, code identifiers, test IDs, and requirement IDs.
+- Do not write general prose in English. Avoid sentences such as "The system SHALL..." or "When the client..."; if SHALL/MUST is useful, place it inside a Korean sentence.
+- Treat specs as externally observable behavior contracts, not implementation summaries.
+- Do not list internal function names, class names, private helper names, internal variable names, module paths, file paths, or line numbers in `openspec/specs/*/spec.md`.
+- Proposal and planning content should describe feature purpose, user/client/operator value, external contract changes, service or screen/API impact, and validation approach rather than code inventories.
+- Design documents may be more technical, but should explain architecture decisions and trade-offs first; use file paths or module names only as minimal implementation-location references.
+- Tasks should be written around validation purpose and completion criteria, and should connect work to Requirements or Scenarios when possible.
+- Generated E2E and DOCX outputs should be planned under the source spec folder: `openspec/specs/<spec-name>/e2e/` and `openspec/specs/<spec-name>/docs/`.
 
 ## Workflow
 
 1. **Read rules and resolve input**
-   - Read `openspec/config.yaml` and apply its `context` and `rules.specs`.
    - Read `TEMPLATES.md`.
    - Resolve each `$source_folders` entry to an existing folder.
    - Identify whether existing specs already cover any target behavior.
@@ -52,7 +64,7 @@ This repository intentionally does not bundle upstream OpenSpec skills or comman
    - Decide whether each service is single-domain or cross-domain before naming specs. Use `<microservice>_<domain>-<feature>` when the extra domain segment prevents unrelated capabilities from being grouped together; otherwise use `<microservice>_<feature>`.
    - If a source folder is frontend/UI code, trace it to the owning backend API, service, product workflow, or data contract before choosing the service-prefixed spec ID.
    - Step checklist:
-     - [ ] `openspec/config.yaml` has been read.
+     - [ ] The Project OpenSpec Rules in this skill have been applied.
      - [ ] `TEMPLATES.md` has been read.
      - [ ] Every source folder exists and is in scope.
      - [ ] Existing main specs have been checked.

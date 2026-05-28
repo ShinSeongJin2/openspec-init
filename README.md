@@ -25,7 +25,7 @@ Claude Code를 어느 정도 사용해 본 개발자가 **Spec-Driven Developmen
 
 ## 설치
 
-이 저장소는 OpenSpec 자체나 OpenSpec 기본 스킬/커맨드를 대체하지 않습니다. 이 pack의 스킬은 OpenSpec CLI를 호출하거나 OpenSpec 프로젝트 구조를 전제로 하므로, 먼저 OpenSpec CLI가 설치되어 있어야 합니다.
+이 저장소는 OpenSpec 자체나 OpenSpec 기본 스킬/커맨드를 대체하지 않습니다. 이 pack의 스킬은 OpenSpec CLI를 호출하거나 OpenSpec 산출물 구조를 전제로 하므로, 먼저 OpenSpec CLI가 설치되어 있어야 합니다.
 
 ### 1. OpenSpec 설치
 
@@ -43,24 +43,20 @@ openspec --version
 
 ### 2. 대상 프로젝트 OpenSpec 구조 준비
 
-대상 프로젝트가 아직 OpenSpec 구조를 갖고 있지 않다면 둘 중 하나를 선택합니다.
-
-- OpenSpec 기본 구조가 필요하면 대상 프로젝트에서 `openspec init`을 실행합니다.
-- 이 pack의 한국어 작성 규칙과 산출물 배치 규칙만 적용하려면 이 저장소의 `openspec/` 폴더를 복사합니다.
+대상 프로젝트가 아직 OpenSpec 구조를 갖고 있지 않다면 대상 프로젝트에서 `openspec init`을 실행합니다.
 
 ```bash
 cd your-project
 openspec init
 ```
 
-이미 OpenSpec 구조가 있는 프로젝트라면 기존 `openspec/` 내용을 확인한 뒤 병합 방식으로 적용하세요. 기존 스펙을 덮어쓰면 이전 요구사항을 잃을 수 있습니다.
+이미 OpenSpec 구조가 있는 프로젝트라면 기존 `openspec/` 내용을 유지하세요. 이 skill pack은 더 이상 별도의 `openspec/config.yaml`, `openspec/e2e/memories/`, `openspec/e2e/scripts/`를 설치하지 않습니다. 한국어 작성 규칙, feature-sized spec 규칙, spec-local 산출물 배치 규칙은 각 스킬의 `SKILL.md`에 포함되어 있습니다.
 
 ### 3. 커스텀 스킬 복사
 
-이 저장소에서 대상 프로젝트에 복사할 핵심 항목은 다음입니다.
+이 저장소에서 대상 프로젝트에 복사할 항목은 커스텀 스킬 3개입니다.
 
 ```text
-openspec/
 .claude/skills/openspec-code-to-spec/
 .claude/skills/openspec-e2e/
 .claude/skills/openspec-manual/
@@ -69,7 +65,6 @@ openspec/
 대상 프로젝트 루트로 복사합니다.
 
 ```bash
-cp -R openspec your-project/
 mkdir -p your-project/.claude/skills
 cp -R .claude/skills/openspec-code-to-spec your-project/.claude/skills/
 cp -R .claude/skills/openspec-e2e your-project/.claude/skills/
@@ -79,7 +74,6 @@ cp -R .claude/skills/openspec-manual your-project/.claude/skills/
 Windows PowerShell 예시는 다음과 같습니다.
 
 ```powershell
-Copy-Item -Recurse -Force .\openspec C:\path\to\your-project\
 New-Item -ItemType Directory -Force C:\path\to\your-project\.claude\skills
 Copy-Item -Recurse -Force .\.claude\skills\openspec-code-to-spec C:\path\to\your-project\.claude\skills\
 Copy-Item -Recurse -Force .\.claude\skills\openspec-e2e C:\path\to\your-project\.claude\skills\
@@ -91,7 +85,7 @@ Copy-Item -Recurse -Force .\.claude\skills\openspec-manual C:\path\to\your-proje
 ```text
 your-project/
 ├── openspec/
-│   └── config.yaml
+│   └── specs/
 ├── .claude/
 │   └── skills/
 │       ├── openspec-code-to-spec/
@@ -100,7 +94,7 @@ your-project/
 └── ...
 ```
 
-**중요**: 이 저장소는 `.claude/commands`나 upstream OpenSpec 기본 스킬을 포함하지 않습니다. OpenSpec 기본 기능은 설치된 OpenSpec CLI와 upstream 자료를 그대로 사용하고, 이 pack은 `openspec-code-to-spec`, `openspec-e2e`, `openspec-manual`만 추가합니다.
+**중요**: 이 저장소는 `.claude/commands`, upstream OpenSpec 기본 스킬, 프로젝트 `openspec/config.yaml`, 전역 E2E memory/script 폴더를 포함하지 않습니다. OpenSpec 기본 기능은 설치된 OpenSpec CLI와 upstream 자료를 그대로 사용하고, 이 pack은 `openspec-code-to-spec`, `openspec-e2e`, `openspec-manual`만 추가합니다.
 
 ---
 
@@ -170,7 +164,7 @@ billing_invoice-search 스펙 기준으로 E2E 테스트를 만들어줘
 /openspec-code-to-spec services/completion
 ```
 
-이 스킬은 먼저 `openspec/config.yaml`과 템플릿을 읽고, 소스 폴더의 공개 API, UI 흐름, 이벤트, 작업, 저장 상태, 오류 처리 등을 확인합니다. 그 다음 바로 스펙을 쓰지 않고 `openspec/plannings/` 아래에 분할 계획을 먼저 만듭니다.
+이 스킬은 `SKILL.md`에 포함된 프로젝트 규칙과 템플릿을 읽고, 소스 폴더의 공개 API, UI 흐름, 이벤트, 작업, 저장 상태, 오류 처리 등을 확인합니다. 그 다음 바로 스펙을 쓰지 않고 `openspec/plannings/` 아래에 분할 계획을 먼저 만듭니다.
 
 **산출물**:
 
@@ -264,7 +258,6 @@ openspec/specs/<spec-name>/
 
 ```text
 openspec/
-├── config.yaml
 ├── plannings/
 │   └── openspec-code-to-spec-<scope-slug>.md
 └── specs/
@@ -445,16 +438,15 @@ npm install -g @fission-ai/openspec@latest
 
 ## 업데이트
 
-이 skill pack 자체를 최신으로 반영하려면 이 저장소에서 최신 `openspec/`와 커스텀 스킬 3개 폴더만 다시 대상 프로젝트에 병합합니다.
+이 skill pack 자체를 최신으로 반영하려면 이 저장소에서 최신 커스텀 스킬 3개 폴더만 다시 대상 프로젝트에 병합합니다.
 
 ```text
-openspec/
 .claude/skills/openspec-code-to-spec/
 .claude/skills/openspec-e2e/
 .claude/skills/openspec-manual/
 ```
 
-기존 프로젝트에 이미 작성된 `openspec/specs/` 산출물이 있다면 덮어쓰기 전에 반드시 diff를 확인하세요. 특히 `openspec/config.yaml`은 프로젝트 규칙을 담고 있으므로, 대상 프로젝트에서 수정한 내용이 있다면 수동 병합을 권장합니다.
+기존 프로젝트에 이미 작성된 `openspec/specs/` 산출물은 이 업데이트 과정에서 덮어쓸 필요가 없습니다. 이 pack의 규칙 변경은 스킬 폴더 안에 포함되므로, 대상 프로젝트에서 스킬 파일을 수정해 사용 중이었다면 수동 병합을 권장합니다.
 
 ---
 
@@ -477,7 +469,6 @@ OpenSpec 산출물까지 제거하려면 `openspec/` 폴더를 별도로 정리�
 주요 파일은 다음과 같습니다.
 
 ```text
-openspec/config.yaml
 .claude/skills/openspec-code-to-spec/SKILL.md
 .claude/skills/openspec-code-to-spec/TEMPLATES.md
 .claude/skills/openspec-e2e/SKILL.md
@@ -487,6 +478,6 @@ openspec/config.yaml
 .claude/skills/openspec-manual/STYLE_REFERENCE.py
 ```
 
-`openspec/config.yaml`은 한국어 작성 규칙, feature-sized spec 규칙, spec-local 산출물 배치 규칙을 담고 있습니다. 각 스킬의 `SKILL.md`는 Claude Code가 해당 작업을 수행할 때 따라야 할 워크플로와 품질 게이트를 정의합니다.
+각 스킬의 `SKILL.md`는 한국어 작성 규칙, feature-sized spec 규칙, spec-local 산출물 배치 규칙, Claude Code가 해당 작업을 수행할 때 따라야 할 워크플로와 품질 게이트를 정의합니다.
 
 이 저장소에는 `.claude/commands`나 upstream OpenSpec 기본 스킬이 포함되지 않습니다. 해당 기능은 OpenSpec CLI 같은 upstream 설치본을 사용하세요.
