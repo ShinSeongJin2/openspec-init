@@ -1,5 +1,5 @@
 ---
-name: docx-user-manual
+name: openspec-manual
 description: Create polished Korean DOCX end-user manuals from product specs, UI behavior references, scenario notes, and screenshot artifacts. Use when the user asks to generate a Word user guide, usage manual, user manual, DOCX manual, or beginner-friendly product documentation from spec-driven evidence.
 argument-hint: "<spec-name>"
 arguments: [spec_name]
@@ -18,7 +18,7 @@ Create a professional `.docx` user manual from product specs, scenario documents
 
 **Input**: One or more OpenSpec `spec.md` files, scenario documents, UI behavior references, screenshot artifacts, related app/service folders, and the spec-local output directory `openspec/specs/<spec-name>/docs/`.
 
-**Direct command input**: When invoked as `/docx-user-manual <spec-name>`, use `$spec_name` as the exact OpenSpec folder name. Project feature specs MUST use the service-prefixed OpenSpec ID format: `<microservice>_<domain>-<feature>` for cross-domain services or `<microservice>_<feature>` for single-domain/domain-expressive services (for example `completion_agent-memory-chat` or `billing_invoice-search`). If `$spec_name` is empty, ask for the spec folder name. Find `openspec/specs/<spec-name>/spec.md`, read it and related artifacts, then find related E2E scenario documents, test code, result files, execution summaries, and screenshots under `openspec/specs/<spec-name>/e2e/` before generating the manual. If the folder or E2E evidence is missing or ambiguous, report what was found and ask for the missing selection instead of guessing.
+**Direct command input**: When invoked as `/openspec-manual <spec-name>`, use `$spec_name` as the exact OpenSpec folder name. Project feature specs MUST use the service-prefixed OpenSpec ID format: `<microservice>_<domain>-<feature>` for cross-domain services or `<microservice>_<feature>` for single-domain/domain-expressive services (for example `completion_agent-memory-chat` or `billing_invoice-search`). If `$spec_name` is empty, ask for the spec folder name. Find `openspec/specs/<spec-name>/spec.md`, read it and related artifacts, then find related E2E scenario documents, test code, result files, execution summaries, and screenshots under `openspec/specs/<spec-name>/e2e/` before generating the manual. If the folder or E2E evidence is missing or ambiguous, report what was found and ask for the missing selection instead of guessing.
 
 **Feature Traceability Rule**: For service-prefixed specs, use the exact spec folder name as the E2E suite slug and manual output slug. For example, `openspec/specs/completion_agent-memory-chat/spec.md` maps to `openspec/specs/completion_agent-memory-chat/e2e/` and `openspec/specs/completion_agent-memory-chat/docs/completion_agent-memory-chat-user-manual.docx`. Do not rewrite underscores or hyphens because they preserve the service/domain/feature boundary.
 

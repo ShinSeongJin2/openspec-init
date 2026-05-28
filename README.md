@@ -19,7 +19,7 @@ Claude Code를 어느 정도 사용해 본 개발자가 **Spec-Driven Developmen
 - OpenSpec 산출물을 한국어로 작성하도록 프로젝트 규칙을 제공합니다.
 - 코드 요약이 아니라 외부에서 관찰 가능한 행위 계약 중심의 스펙을 만들도록 안내합니다.
 - 스펙, E2E, 매뉴얼 산출물을 같은 `openspec/specs/<spec-name>/` 폴더 아래에 모아 추적성을 유지합니다.
-- `code-to-spec`, `e2e-tests`, `docx-user-manual` 3개 스킬을 순차적으로 사용해 코드에서 매뉴얼까지 이어갈 수 있습니다.
+- `openspec-code-to-spec`, `openspec-e2e`, `openspec-manual` 3개 스킬을 순차적으로 사용해 코드에서 매뉴얼까지 이어갈 수 있습니다.
 
 ---
 
@@ -61,9 +61,9 @@ openspec init
 
 ```text
 openspec/
-.claude/skills/code-to-spec/
-.claude/skills/e2e-tests/
-.claude/skills/docx-user-manual/
+.claude/skills/openspec-code-to-spec/
+.claude/skills/openspec-e2e/
+.claude/skills/openspec-manual/
 ```
 
 대상 프로젝트 루트로 복사합니다.
@@ -71,9 +71,9 @@ openspec/
 ```bash
 cp -R openspec your-project/
 mkdir -p your-project/.claude/skills
-cp -R .claude/skills/code-to-spec your-project/.claude/skills/
-cp -R .claude/skills/e2e-tests your-project/.claude/skills/
-cp -R .claude/skills/docx-user-manual your-project/.claude/skills/
+cp -R .claude/skills/openspec-code-to-spec your-project/.claude/skills/
+cp -R .claude/skills/openspec-e2e your-project/.claude/skills/
+cp -R .claude/skills/openspec-manual your-project/.claude/skills/
 ```
 
 Windows PowerShell 예시는 다음과 같습니다.
@@ -81,9 +81,9 @@ Windows PowerShell 예시는 다음과 같습니다.
 ```powershell
 Copy-Item -Recurse -Force .\openspec C:\path\to\your-project\
 New-Item -ItemType Directory -Force C:\path\to\your-project\.claude\skills
-Copy-Item -Recurse -Force .\.claude\skills\code-to-spec C:\path\to\your-project\.claude\skills\
-Copy-Item -Recurse -Force .\.claude\skills\e2e-tests C:\path\to\your-project\.claude\skills\
-Copy-Item -Recurse -Force .\.claude\skills\docx-user-manual C:\path\to\your-project\.claude\skills\
+Copy-Item -Recurse -Force .\.claude\skills\openspec-code-to-spec C:\path\to\your-project\.claude\skills\
+Copy-Item -Recurse -Force .\.claude\skills\openspec-e2e C:\path\to\your-project\.claude\skills\
+Copy-Item -Recurse -Force .\.claude\skills\openspec-manual C:\path\to\your-project\.claude\skills\
 ```
 
 복사 후 대상 프로젝트의 구조는 대략 다음과 같습니다.
@@ -94,17 +94,17 @@ your-project/
 │   └── config.yaml
 ├── .claude/
 │   └── skills/
-│       ├── code-to-spec/
-│       ├── e2e-tests/
-│       └── docx-user-manual/
+│       ├── openspec-code-to-spec/
+│       ├── openspec-e2e/
+│       └── openspec-manual/
 └── ...
 ```
 
-**중요**: 이 저장소는 `.claude/commands`, `openspec-*` 기본 스킬, `docx` 기본 스킬을 포함하지 않습니다. OpenSpec 기본 기능은 설치된 OpenSpec CLI와 upstream 자료를 그대로 사용하고, 이 pack은 `code-to-spec`, `e2e-tests`, `docx-user-manual`만 추가합니다.
+**중요**: 이 저장소는 `.claude/commands`, upstream OpenSpec 기본 스킬, `docx` 기본 스킬을 포함하지 않습니다. OpenSpec 기본 기능은 설치된 OpenSpec CLI와 upstream 자료를 그대로 사용하고, 이 pack은 `openspec-code-to-spec`, `openspec-e2e`, `openspec-manual`만 추가합니다.
 
 ### 4. DOCX 스킬 의존성 준비
 
-`docx-user-manual`은 표준 `docx` 문서 스킬을 확장하는 방식으로 작성되어 있습니다. Claude Code에 document skills plugin이 없다면 다음 명령으로 설치하세요.
+`openspec-manual`은 표준 `docx` 문서 스킬을 확장하는 방식으로 작성되어 있습니다. Claude Code에 document skills plugin이 없다면 다음 명령으로 설치하세요.
 
 ```text
 /plugin install document-skills@anthropic-agent-skills
@@ -119,27 +119,27 @@ your-project/
 대상 프로젝트를 Claude Code에서 열고, 코드 폴더를 스펙으로 변환합니다.
 
 ```text
-/code-to-spec services/billing
+/openspec-code-to-spec services/billing
 ```
 
 생성된 스펙 이름을 확인한 뒤 E2E 테스트를 만듭니다.
 
 ```text
-/e2e-tests billing_invoice-search
+/openspec-e2e billing_invoice-search
 ```
 
 E2E 산출물과 스크린샷이 준비되면 DOCX 사용자 매뉴얼을 생성합니다.
 
 ```text
-/docx-user-manual billing_invoice-search
+/openspec-manual billing_invoice-search
 ```
 
 각 스킬은 인자를 생략할 수 있습니다. 다만 대상이 명확하지 않으면 스킬이 분석할 코드 폴더, 스펙 이름, 또는 스펙 경로를 다시 물어봅니다.
 
 ```text
-/code-to-spec
-/e2e-tests
-/docx-user-manual
+/openspec-code-to-spec
+/openspec-e2e
+/openspec-manual
 ```
 
 자연어로도 요청할 수 있습니다.
@@ -162,22 +162,22 @@ billing_invoice-search 스펙 기준으로 E2E 테스트를 만들어줘
 
 | # | Skill | 입력 | 주요 산출물 |
 |---|---|---|---|
-| 1 | `code-to-spec` | 소스 폴더 하나 이상 | planning 문서, `spec.md` |
-| 2 | `e2e-tests` | OpenSpec 스펙 이름 | E2E 시나리오, Playwright 테스트, Docker 실행 환경, 결과/스크린샷/커버리지 리포트 |
-| 3 | `docx-user-manual` | OpenSpec 스펙 이름 | DOCX 사용자 매뉴얼, 재생성 스크립트 |
+| 1 | `openspec-code-to-spec` | 소스 폴더 하나 이상 | planning 문서, `spec.md` |
+| 2 | `openspec-e2e` | OpenSpec 스펙 이름 | E2E 시나리오, Playwright 테스트, Docker 실행 환경, 결과/스크린샷/커버리지 리포트 |
+| 3 | `openspec-manual` | OpenSpec 스펙 이름 | DOCX 사용자 매뉴얼, 재생성 스크립트 |
 
 ### Step 1 — Code To Spec
 
 기존 코드에서 사용자, 클라이언트, 운영자가 관찰할 수 있는 행위를 추출해 OpenSpec main spec으로 정리합니다.
 
 ```text
-/code-to-spec <source-folder...>
+/openspec-code-to-spec <source-folder...>
 ```
 
 예시:
 
 ```text
-/code-to-spec services/completion
+/openspec-code-to-spec services/completion
 ```
 
 이 스킬은 먼저 `openspec/config.yaml`과 템플릿을 읽고, 소스 폴더의 공개 API, UI 흐름, 이벤트, 작업, 저장 상태, 오류 처리 등을 확인합니다. 그 다음 바로 스펙을 쓰지 않고 `openspec/plannings/` 아래에 분할 계획을 먼저 만듭니다.
@@ -187,7 +187,7 @@ billing_invoice-search 스펙 기준으로 E2E 테스트를 만들어줘
 ```text
 openspec/
 ├── plannings/
-│   └── code-to-spec-<scope-slug>.md
+│   └── openspec-code-to-spec-<scope-slug>.md
 └── specs/
     └── <spec-name>/
         └── spec.md
@@ -207,13 +207,13 @@ openspec/specs/<microservice>_<domain>-<feature>/spec.md
 OpenSpec 스펙을 기준으로 실제 사용자 흐름과 검증 가능한 시나리오를 만들고, Docker Compose와 Playwright 기반 E2E 테스트를 구성합니다.
 
 ```text
-/e2e-tests <spec-name>
+/openspec-e2e <spec-name>
 ```
 
 예시:
 
 ```text
-/e2e-tests completion_agent-memory-chat
+/openspec-e2e completion_agent-memory-chat
 ```
 
 이 스킬은 스펙 이름을 그대로 E2E suite slug로 사용합니다. 언더스코어와 하이픈은 서비스, 도메인, 기능 경계를 나타내므로 바꾸지 않습니다.
@@ -237,20 +237,20 @@ openspec/specs/<spec-name>/
         └── spec-coverage-report.html
 ```
 
-E2E 결과물은 단순 테스트 코드가 아니라 다음 단계의 사용자 매뉴얼을 만들기 위한 증거이기도 합니다. 특히 시나리오 문서와 스크린샷은 `docx-user-manual`이 사용자 흐름과 화면 설명을 구성할 때 재사용합니다.
+E2E 결과물은 단순 테스트 코드가 아니라 다음 단계의 사용자 매뉴얼을 만들기 위한 증거이기도 합니다. 특히 시나리오 문서와 스크린샷은 `openspec-manual`이 사용자 흐름과 화면 설명을 구성할 때 재사용합니다.
 
 ### Step 3 — DOCX User Manual
 
 스펙과 E2E 산출물, 실제 화면 스크린샷을 바탕으로 최종 사용자가 읽을 수 있는 한국어 DOCX 매뉴얼을 생성합니다.
 
 ```text
-/docx-user-manual <spec-name>
+/openspec-manual <spec-name>
 ```
 
 예시:
 
 ```text
-/docx-user-manual completion_agent-memory-chat
+/openspec-manual completion_agent-memory-chat
 ```
 
 이 스킬은 개발자용 검증 문서를 그대로 옮기지 않습니다. E2E, Playwright, API route, assertion 같은 내부 용어는 사용자에게 보이는 작업 흐름, 화면 항목, 오류 해결 방법으로 바꿔 설명합니다.
@@ -276,7 +276,7 @@ openspec/specs/<spec-name>/
 openspec/
 ├── config.yaml
 ├── plannings/
-│   └── code-to-spec-<scope-slug>.md
+│   └── openspec-code-to-spec-<scope-slug>.md
 └── specs/
     └── <spec-name>/
         ├── spec.md
@@ -306,7 +306,7 @@ openspec/
 ### 입력
 
 ```text
-/code-to-spec services/billing
+/openspec-code-to-spec services/billing
 ```
 
 Claude Code는 코드 구조를 그대로 요약하지 않고, 외부에서 관찰 가능한 기능 단위로 나눕니다. 그 결과 `billing_invoice-search`라는 스펙이 적절하다고 판단할 수 있습니다.
@@ -314,7 +314,7 @@ Claude Code는 코드 구조를 그대로 요약하지 않고, 외부에서 관�
 ### Step 1 결과
 
 ```text
-openspec/plannings/code-to-spec-billing.md
+openspec/plannings/openspec-code-to-spec-billing.md
 openspec/specs/billing_invoice-search/spec.md
 ```
 
@@ -323,7 +323,7 @@ openspec/specs/billing_invoice-search/spec.md
 ### Step 2 입력
 
 ```text
-/e2e-tests billing_invoice-search
+/openspec-e2e billing_invoice-search
 ```
 
 ### Step 2 결과
@@ -340,7 +340,7 @@ openspec/specs/billing_invoice-search/e2e/results/spec-coverage-report.html
 ### Step 3 입력
 
 ```text
-/docx-user-manual billing_invoice-search
+/openspec-manual billing_invoice-search
 ```
 
 ### Step 3 결과
@@ -360,9 +360,9 @@ openspec/specs/billing_invoice-search/docs/generate_billing_invoice-search_user_
 
 | Skill | 인자 생략 시 | 인자 전달 시 |
 |---|---|---|
-| `code-to-spec` | 분석할 소스 폴더를 질문합니다. | 전달한 폴더들을 분석합니다. |
-| `e2e-tests` | 사용할 OpenSpec 스펙 이름을 질문합니다. | `openspec/specs/<spec-name>/spec.md`를 기준으로 진행합니다. |
-| `docx-user-manual` | 매뉴얼을 만들 스펙 이름과 E2E 증거를 질문합니다. | 해당 스펙 폴더의 `spec.md`, `e2e/` 산출물을 기준으로 진행합니다. |
+| `openspec-code-to-spec` | 분석할 소스 폴더를 질문합니다. | 전달한 폴더들을 분석합니다. |
+| `openspec-e2e` | 사용할 OpenSpec 스펙 이름을 질문합니다. | `openspec/specs/<spec-name>/spec.md`를 기준으로 진행합니다. |
+| `openspec-manual` | 매뉴얼을 만들 스펙 이름과 E2E 증거를 질문합니다. | 해당 스펙 폴더의 `spec.md`, `e2e/` 산출물을 기준으로 진행합니다. |
 
 스펙 이름은 폴더명 그대로 전달하는 것을 권장합니다.
 
@@ -393,7 +393,7 @@ SDD는 "코드를 먼저 만들고 나중에 문서화"하는 방식과 반대�
 - 오류, 권한, 빈 결과, 재시도 같은 경계 상황은 어떻게 보여야 하는가?
 - 이 요구사항은 어떤 E2E 시나리오로 검증할 수 있는가?
 
-이 skill pack은 기존 코드에서 시작할 수 있도록 설계되어 있습니다. 이미 구현된 기능을 `code-to-spec`으로 역분석해 현재 시스템이 보장해야 하는 행위를 정리하고, 이후 테스트와 매뉴얼을 같은 스펙 기준으로 이어갑니다.
+이 skill pack은 기존 코드에서 시작할 수 있도록 설계되어 있습니다. 이미 구현된 기능을 `openspec-code-to-spec`으로 역분석해 현재 시스템이 보장해야 하는 행위를 정리하고, 이후 테스트와 매뉴얼을 같은 스펙 기준으로 이어갑니다.
 
 ---
 
@@ -402,7 +402,7 @@ SDD는 "코드를 먼저 만들고 나중에 문서화"하는 방식과 반대�
 ### 잘 사용하는 방법
 
 - 한 번에 전체 서비스를 스펙 하나로 만들지 말고, 사용자 또는 클라이언트가 이해할 수 있는 기능 단위로 나누세요.
-- `code-to-spec` 결과를 바로 확정하지 말고 `openspec/plannings/`의 분할 계획을 먼저 검토하세요.
+- `openspec-code-to-spec` 결과를 바로 확정하지 말고 `openspec/plannings/`의 분할 계획을 먼저 검토하세요.
 - E2E를 만들기 전에 `spec.md`가 실제로 테스트 가능한 요구사항과 시나리오를 담고 있는지 확인하세요.
 - 매뉴얼 품질은 E2E 스크린샷 품질에 크게 좌우됩니다. 사용자에게 의미 있는 화면 상태를 캡처하도록 시나리오 단계에서 정리하세요.
 - 산출물은 사람이 직접 수정해도 됩니다. 다음 Claude Code 세션에서 수정된 파일을 기준으로 이어갈 수 있습니다.
@@ -425,15 +425,15 @@ A. 권장하지 않습니다. 대상 프로젝트를 `openspec init`으로 초�
 
 **Q. 기존 프로젝트에 이미 `.claude/` 폴더가 있으면 어떻게 하나요?**
 
-A. 폴더 전체를 덮어쓰기보다 `.claude/skills/code-to-spec`, `.claude/skills/e2e-tests`, `.claude/skills/docx-user-manual`만 기존 `.claude/skills/` 아래로 병합하세요. `.claude/commands`나 upstream OpenSpec 기본 스킬을 이 저장소에서 복사할 필요는 없습니다.
+A. 폴더 전체를 덮어쓰기보다 `.claude/skills/openspec-code-to-spec`, `.claude/skills/openspec-e2e`, `.claude/skills/openspec-manual`만 기존 `.claude/skills/` 아래로 병합하세요. `.claude/commands`나 upstream OpenSpec 기본 스킬을 이 저장소에서 복사할 필요는 없습니다.
 
-**Q. `docx-user-manual`을 쓰려면 `.claude/skills/docx`도 복사해야 하나요?**
+**Q. `openspec-manual`을 쓰려면 `.claude/skills/docx`도 복사해야 하나요?**
 
 A. 아닙니다. 이 저장소는 `docx` 기본 스킬을 포함하지 않습니다. Claude Code의 document skills plugin을 설치해 `docx` 스킬을 제공하거나, 프로젝트에서 이미 사용하는 DOCX 생성 도구를 사용하세요.
 
-**Q. `code-to-spec`에 여러 폴더를 전달할 수 있나요?**
+**Q. `openspec-code-to-spec`에 여러 폴더를 전달할 수 있나요?**
 
-A. 가능합니다. 예를 들어 `/code-to-spec services/billing services/auth`처럼 전달할 수 있습니다. 다만 스킬은 서비스 경계와 기능 경계를 먼저 나눈 뒤 여러 스펙으로 분리하려고 합니다.
+A. 가능합니다. 예를 들어 `/openspec-code-to-spec services/billing services/auth`처럼 전달할 수 있습니다. 다만 스킬은 서비스 경계와 기능 경계를 먼저 나눈 뒤 여러 스펙으로 분리하려고 합니다.
 
 **Q. 스펙 없이 바로 E2E 테스트를 만들 수 있나요?**
 
@@ -441,7 +441,7 @@ A. 이 pack의 권장 흐름에서는 먼저 `openspec/specs/<spec-name>/spec.md
 
 **Q. E2E 없이 DOCX 매뉴얼을 만들 수 있나요?**
 
-A. 스킬은 기본적으로 스펙과 E2E 시나리오, 스크린샷을 근거로 매뉴얼을 만듭니다. E2E 증거가 없으면 어떤 화면과 사용자 흐름을 문서화해야 하는지 다시 확인해야 하므로, 먼저 `e2e-tests`를 진행하는 것이 좋습니다.
+A. 스킬은 기본적으로 스펙과 E2E 시나리오, 스크린샷을 근거로 매뉴얼을 만듭니다. E2E 증거가 없으면 어떤 화면과 사용자 흐름을 문서화해야 하는지 다시 확인해야 하므로, 먼저 `openspec-e2e`를 진행하는 것이 좋습니다.
 
 **Q. 산출물은 모두 한국어로 작성되나요?**
 
@@ -463,9 +463,9 @@ npm install -g @fission-ai/openspec@latest
 
 ```text
 openspec/
-.claude/skills/code-to-spec/
-.claude/skills/e2e-tests/
-.claude/skills/docx-user-manual/
+.claude/skills/openspec-code-to-spec/
+.claude/skills/openspec-e2e/
+.claude/skills/openspec-manual/
 ```
 
 기존 프로젝트에 이미 작성된 `openspec/specs/` 산출물이 있다면 덮어쓰기 전에 반드시 diff를 확인하세요. 특히 `openspec/config.yaml`은 프로젝트 규칙을 담고 있으므로, 대상 프로젝트에서 수정한 내용이 있다면 수동 병합을 권장합니다.
@@ -477,9 +477,9 @@ openspec/
 대상 프로젝트에서 이 skill pack을 제거하려면 추가했던 스킬 폴더를 삭제합니다.
 
 ```bash
-rm -rf .claude/skills/code-to-spec
-rm -rf .claude/skills/e2e-tests
-rm -rf .claude/skills/docx-user-manual
+rm -rf .claude/skills/openspec-code-to-spec
+rm -rf .claude/skills/openspec-e2e
+rm -rf .claude/skills/openspec-manual
 ```
 
 OpenSpec 산출물까지 제거하려면 `openspec/` 폴더를 별도로 정리해야 합니다. 이미 생성한 스펙, E2E 결과, DOCX 매뉴얼이 함께 삭제될 수 있으니 주의하세요.
@@ -492,15 +492,15 @@ OpenSpec 산출물까지 제거하려면 `openspec/` 폴더를 별도로 정리�
 
 ```text
 openspec/config.yaml
-.claude/skills/code-to-spec/SKILL.md
-.claude/skills/code-to-spec/TEMPLATES.md
-.claude/skills/e2e-tests/SKILL.md
-.claude/skills/e2e-tests/OUTPUT_CONTRACT.md
-.claude/skills/e2e-tests/TEMPLATES.md
-.claude/skills/docx-user-manual/SKILL.md
-.claude/skills/docx-user-manual/STYLE_REFERENCE.py
+.claude/skills/openspec-code-to-spec/SKILL.md
+.claude/skills/openspec-code-to-spec/TEMPLATES.md
+.claude/skills/openspec-e2e/SKILL.md
+.claude/skills/openspec-e2e/OUTPUT_CONTRACT.md
+.claude/skills/openspec-e2e/TEMPLATES.md
+.claude/skills/openspec-manual/SKILL.md
+.claude/skills/openspec-manual/STYLE_REFERENCE.py
 ```
 
 `openspec/config.yaml`은 한국어 작성 규칙, feature-sized spec 규칙, spec-local 산출물 배치 규칙을 담고 있습니다. 각 스킬의 `SKILL.md`는 Claude Code가 해당 작업을 수행할 때 따라야 할 워크플로와 품질 게이트를 정의합니다.
 
-이 저장소에는 `.claude/commands`, `openspec-*` 기본 스킬, `.claude/skills/docx`가 포함되지 않습니다. 해당 기능은 OpenSpec CLI 또는 Claude Code document skills plugin 같은 upstream 설치본을 사용하세요.
+이 저장소에는 `.claude/commands`, upstream OpenSpec 기본 스킬, `.claude/skills/docx`가 포함되지 않습니다. 해당 기능은 OpenSpec CLI 또는 Claude Code document skills plugin 같은 upstream 설치본을 사용하세요.

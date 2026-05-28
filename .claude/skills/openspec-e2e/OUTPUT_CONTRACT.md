@@ -153,7 +153,7 @@ Before completion, the suite must satisfy:
 - A Sanity Check verifies container health, source-run app process readiness, required migrations/seeds, frontend load, and at least one real frontend-to-gateway-to-backend or frontend-to-backend route through the hybrid runtime for API-backed suites.
 - The Playwright spec path exists.
 - If results were generated, `results.json` and `html-report/index.html` are under `openspec/specs/<spec-name>/e2e/results/`.
-- OpenSpec traceability coverage can be evaluated with `node .claude/skills/e2e-tests/scripts/evaluate_spec_coverage.mjs --suite <suite-slug> --suite-root openspec/specs/<spec-name>/e2e --spec openspec/specs/<spec-name>/spec.md --write-summary`.
+- OpenSpec traceability coverage can be evaluated with `node .claude/skills/openspec-e2e/scripts/evaluate_spec_coverage.mjs --suite <suite-slug> --suite-root openspec/specs/<spec-name>/e2e --spec openspec/specs/<spec-name>/spec.md --write-summary`.
 - If backend coverage was generated, both `backend-coverage/coverage.xml` and `backend-coverage/html/index.html` are under `openspec/specs/<spec-name>/e2e/results/`. Missing HTML is a validation failure for coverage reporting.
 - If frontend coverage was generated, raw coverage data and a Monocart/browser-readable report are under `frontend-coverage/`, and the report states whether coverage is source-mapped or bundle-level. Missing raw data is a validation failure for frontend coverage reporting.
 - If coverage was generated, `spec-coverage-report.html`, `coverage-summary.json`, backend coverage outputs, and frontend coverage outputs are under `openspec/specs/<spec-name>/e2e/results/`.

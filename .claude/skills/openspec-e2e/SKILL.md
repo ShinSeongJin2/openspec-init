@@ -1,5 +1,5 @@
 ---
-name: e2e-tests
+name: openspec-e2e
 description: Design, implement, and maintain spec-driven Playwright E2E tests from OpenSpec spec.md files. Use when creating or extending E2E coverage matrices, scenario documents, Playwright specs, deterministic API stubs, Dockerized infrastructure, source-run backend/frontend services, screenshots, backend/frontend coverage gates, AI spec coverage HTML reports, and stable execution reports.
 argument-hint: "<spec-name>"
 arguments: [spec_name]
@@ -17,7 +17,7 @@ Create deterministic, incrementally maintainable E2E coverage from OpenSpec requ
 
 **Input**: One or more `spec.md` files, related app/backend files, environment hints, and optional existing tests.
 
-**Direct command input**: When invoked as `/e2e-tests <spec-name>`, use `$spec_name` as the exact OpenSpec folder name. Project feature specs MUST use the service-prefixed OpenSpec ID format: `<microservice>_<domain>-<feature>` for cross-domain services or `<microservice>_<feature>` for single-domain/domain-expressive services (for example `completion_agent-memory-chat` or `billing_invoice-search`). If `$spec_name` is empty, ask for the spec folder name. Find `openspec/specs/<spec-name>/spec.md`, read it and related artifacts, then run this workflow from that evidence. If the folder is missing or ambiguous, ask the user to choose instead of guessing.
+**Direct command input**: When invoked as `/openspec-e2e <spec-name>`, use `$spec_name` as the exact OpenSpec folder name. Project feature specs MUST use the service-prefixed OpenSpec ID format: `<microservice>_<domain>-<feature>` for cross-domain services or `<microservice>_<feature>` for single-domain/domain-expressive services (for example `completion_agent-memory-chat` or `billing_invoice-search`). If `$spec_name` is empty, ask for the spec folder name. Find `openspec/specs/<spec-name>/spec.md`, read it and related artifacts, then run this workflow from that evidence. If the folder is missing or ambiguous, ask the user to choose instead of guessing.
 
 **Feature Traceability Rule**: Preserve the OpenSpec spec folder name as the default E2E suite slug. For `openspec/specs/completion_agent-memory-chat/spec.md`, use suite slug `completion_agent-memory-chat`; for `openspec/specs/billing_invoice-search/spec.md`, use suite slug `billing_invoice-search`. Do not rewrite underscores or hyphens because they preserve the service/domain/feature boundary across scenario documents, test paths, results, screenshots, and later DOCX manuals.
 
@@ -89,7 +89,7 @@ Read these files before creating or changing E2E outputs:
 - [scripts/validate_e2e_outputs.py](scripts/validate_e2e_outputs.py): consistency checker. Run it after editing scenario docs or reports.
 - [scripts/evaluate_spec_coverage.mjs](scripts/evaluate_spec_coverage.mjs): OpenSpec traceability gate. Run it after Playwright results exist to verify Requirement/Scenario/Test/Screenshot coverage and update `coverage-summary.json`.
 - [scripts/review_compose_runtime.py](scripts/review_compose_runtime.py): Hybrid Runtime Rule pre-check. MUST be run BEFORE creating, editing, or booting `docker-compose.e2e.yml`. Emits WARNINGS (not errors) when Compose service entries look like repository-owned frontend or backend services. Warnings are informational because there are legitimate exceptions, but every warning must be either resolved (move the service to source-run) or explicitly justified in the execution summary as a user-approved app-container exception. Always invoke with `python -X utf8 ...` (or set `PYTHONIOENCODING=utf-8`) so the Korean warning text renders correctly on Windows consoles whose default code page is not UTF-8.
-- [../docx-user-manual/SKILL.md](../docx-user-manual/SKILL.md): screenshot evidence expectations for DOCX user manuals. Read it when E2E screenshots may later feed user manual generation.
+- [../openspec-manual/SKILL.md](../openspec-manual/SKILL.md): screenshot evidence expectations for DOCX user manuals. Read it when E2E screenshots may later feed user manual generation.
 
 ## Workflow
 
@@ -175,7 +175,7 @@ Read these files before creating or changing E2E outputs:
    - Treat the root `docker-compose.e2e.yml` as mandatory for infrastructure dependencies only.
    - Create the file if it does not exist. If it exists, extend it without breaking unrelated suites.
    - **Run the Compose runtime pre-check FIRST**, before any other Phase B work and before any `docker compose ... up`:
-     `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml`
+     `python -X utf8 .claude/skills/openspec-e2e/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml`
      This is a heuristic gate that flags Compose service entries that look like repository-owned frontend/backend services (Hybrid Runtime Rule violations). It returns WARNINGS, not errors. Every warning must be either (a) resolved by moving the service to a source-run command and removing it from Compose, or (b) explicitly justified as a user-approved app-container exception and documented in the execution summary. Re-run the script after any edit to `docker-compose.e2e.yml` and again immediately before boot in Step 5. Do not rely on the LLM to remember the rule mid-flow — let the script be the gate.
    - Compose must model stable infrastructure dependencies such as databases, graph stores, caches, queues, object storage, mail sinks, and external-service mocks. It MUST NOT Dockerize repository-owned frontend, backend, gateway, reverse proxy, worker, or BFF code unless the user explicitly approves an exception because no local source-run command exists.
    - Configure frontend API base URLs so browser requests flow through the source-run gateway/backend path, not through Playwright route interception for owned services.
@@ -194,7 +194,7 @@ Read these files before creating or changing E2E outputs:
    - Add explicit health checks or readiness probes for services that Playwright or Sanity Check depends on.
    - Step checklist:
      - [ ] Root `docker-compose.e2e.yml` exists and includes the required infrastructure dependencies for every API-backed scenario.
-     - [ ] `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml` has been run; every emitted warning has been either resolved by source-running the flagged service or recorded as a user-approved exception in the execution summary.
+     - [ ] `python -X utf8 .claude/skills/openspec-e2e/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml` has been run; every emitted warning has been either resolved by source-running the flagged service or recorded as a user-approved exception in the execution summary.
      - [ ] Suite-specific seed files are under `openspec/specs/<spec-name>/e2e/seed_files/`.
      - [ ] `docker-compose.e2e.yml` includes required infrastructure dependencies only, unless an app-container exception is explicitly approved.
      - [ ] Repository-owned frontend/backend/gateway services have source-run commands or suite-local startup helpers.
@@ -207,7 +207,7 @@ Read these files before creating or changing E2E outputs:
 
 5. **Boot infrastructure, start source-run services, and run Sanity Check**
    - Re-run the Hybrid Runtime Rule pre-check immediately before boot:
-     `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml`
+     `python -X utf8 .claude/skills/openspec-e2e/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml`
      Every warning must already be either resolved or justified per Step 4. Do not boot Compose while unresolved/unjustified warnings remain.
    - Validate the compose file from the repository root with `docker compose -f docker-compose.e2e.yml config`.
    - Start infrastructure with `docker compose -f docker-compose.e2e.yml up -d` before writing Playwright tests. Add `--build` only when infrastructure images or suite-specific infrastructure overrides require it.
@@ -217,7 +217,7 @@ Read these files before creating or changing E2E outputs:
    - Fix compose, environment, seed, or readiness issues before adding or modifying Playwright specs.
    - Record Sanity Check commands and outcomes in the execution summary.
    - Step checklist:
-     - [ ] `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml` has been re-run and every warning is either resolved or recorded as a user-approved exception in the execution summary.
+     - [ ] `python -X utf8 .claude/skills/openspec-e2e/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml` has been re-run and every warning is either resolved or recorded as a user-approved exception in the execution summary.
      - [ ] `docker compose -f docker-compose.e2e.yml config` passes.
      - [ ] `docker compose -f docker-compose.e2e.yml up -d` starts the required infrastructure containers.
      - [ ] Required infrastructure containers are healthy or explicitly ready.
@@ -265,7 +265,7 @@ Read these files before creating or changing E2E outputs:
    - Run existing protocol/unit tests if available.
    - Re-run `docker compose -f docker-compose.e2e.yml config` after infrastructure compose changes.
    - Syntax-check helper shell scripts.
-   - Run the E2E output validator against the spec-local suite root when available, for example `python .claude/skills/e2e-tests/scripts/validate_e2e_outputs.py --suite <suite-slug> --suite-root openspec/specs/<spec-name>/e2e`.
+   - Run the E2E output validator against the spec-local suite root when available, for example `python .claude/skills/openspec-e2e/scripts/validate_e2e_outputs.py --suite <suite-slug> --suite-root openspec/specs/<spec-name>/e2e`.
    - The validator checks the Korean headings defined in [TEMPLATES.md](TEMPLATES.md); update the templates and validator together if the section contract changes.
    - Fix failures and rerun until deterministic checks pass.
    - Step checklist:
@@ -284,7 +284,7 @@ Read these files before creating or changing E2E outputs:
      - Every mapped Playwright test exists in `results.json` and has passed.
      - Every documented screenshot checkpoint has a matching screenshot file.
    - Use the skill-provided traceability script and write its output into `coverage-summary.json`, for example:
-     `node .claude/skills/e2e-tests/scripts/evaluate_spec_coverage.mjs --suite <suite-slug> --suite-root openspec/specs/<spec-name>/e2e --spec openspec/specs/<spec-name>/spec.md --write-summary`
+     `node .claude/skills/openspec-e2e/scripts/evaluate_spec_coverage.mjs --suite <suite-slug> --suite-root openspec/specs/<spec-name>/e2e --spec openspec/specs/<spec-name>/spec.md --write-summary`
    - Run backend coverage for the owning service using the instrumented local source-run service path. For long-running servers, flush coverage before report generation, for example by sending `USR2` to a `coverage run --save-signal=USR2` Python process.
    - Generate backend XML and HTML coverage reports under `openspec/specs/<spec-name>/e2e/results/backend-coverage/`. For `coverage.py`, the expected minimum outputs are `backend-coverage/coverage.xml` and `backend-coverage/html/index.html`; if the HTML report is missing, rerun `coverage html -d <backend-coverage>/html` before judging coverage. Do not mark backend coverage `unavailable` without first attempting the instrumented backend run.
    - Run frontend coverage collection and generate the Monocart report under `openspec/specs/<spec-name>/e2e/results/frontend-coverage/monocart-report/`. Source-mapped frontend coverage is the target. If source maps are unavailable after a source-build/coverage-image attempt, use browser V8/bundle coverage as a supporting artifact and explain that the frontend percentage is bundle/path-level rather than original Vue/TS file-level. Do not mark frontend coverage `unavailable` without first attempting either source-mapped or bundle-level Playwright coverage collection.

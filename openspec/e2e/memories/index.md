@@ -2,7 +2,7 @@
 
 Cross-suite E2E knowledge — pitfalls, workarounds, and quirks discovered while
 building suites under `openspec/specs/*/e2e/`. The E2E skill at
-`.claude/skills/e2e-tests/SKILL.md` reads this index in Phase A and writes
+`.claude/skills/openspec-e2e/SKILL.md` reads this index in Phase A and writes
 back to it in Phase F.
 
 ## 사용 방법

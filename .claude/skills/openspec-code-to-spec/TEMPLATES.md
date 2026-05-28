@@ -1,6 +1,6 @@
 # Code To Spec Templates
 
-Use these templates when running the `code-to-spec` workflow. Write generated content in Korean unless the user explicitly requests another language. In OpenSpec specs, keep the structural prefixes `### Requirement:` and `#### Scenario:` but write the names after those prefixes, requirement prose, and scenario steps in Korean. Preserve only exact contract identifiers such as API paths, HTTP methods, fields, events, enum values, SQL keywords, paths, and IDs.
+Use these templates when running the `openspec-code-to-spec` workflow. Write generated content in Korean unless the user explicitly requests another language. In OpenSpec specs, keep the structural prefixes `### Requirement:` and `#### Scenario:` but write the names after those prefixes, requirement prose, and scenario steps in Korean. Preserve only exact contract identifiers such as API paths, HTTP methods, fields, events, enum values, SQL keywords, paths, and IDs.
 
 ## Planning Template
 

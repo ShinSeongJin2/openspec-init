@@ -1,6 +1,6 @@
 ---
-name: code-to-spec
-description: Reverse-engineer OpenSpec main specs from existing source folders by deriving observable behavior, planning capability boundaries, and writing implementation-independent specs under openspec/specs. Use when the user invokes /code-to-spec or asks to generate specs from code.
+name: openspec-code-to-spec
+description: Reverse-engineer OpenSpec main specs from existing source folders by deriving observable behavior, planning capability boundaries, and writing implementation-independent specs under openspec/specs. Use when the user invokes /openspec-code-to-spec or asks to generate specs from code.
 argument-hint: "<source-folder...>"
 arguments: [source_folders]
 disable-model-invocation: true
@@ -15,7 +15,7 @@ metadata:
 
 Reverse-engineer existing source code into OpenSpec main specs. The output is not a code summary; it is a set of behavior contracts the system already appears to guarantee from the perspective of users, clients, operators, public APIs, events, persisted state, and errors.
 
-**Direct command input**: When invoked as `/code-to-spec <source-folder...>`, use `$source_folders` as the exact list of folders to analyze. If `$source_folders` is empty, ask for one or more source folders. If any folder is missing or ambiguous, ask the user to choose instead of guessing.
+**Direct command input**: When invoked as `/openspec-code-to-spec <source-folder...>`, use `$source_folders` as the exact list of folders to analyze. If `$source_folders` is empty, ask for one or more source folders. If any folder is missing or ambiguous, ask the user to choose instead of guessing.
 
 **Language Rule**: Write planning documents and specs in Korean. This includes document titles, section prose, table text, checklists, Requirement names, Requirement bodies, Scenario names, and Scenario steps. Keep only contract identifiers in their original form: API paths and methods, request/response fields, event names, enum values, configuration keys, environment variables, SQL keywords, test IDs, and requirement IDs. Keep the OpenSpec structural prefixes `### Requirement:` and `#### Scenario:`, but write the names after those prefixes in Korean. Do not write general prose such as "The system SHALL..." or "When the client..." in English.
 
@@ -23,7 +23,7 @@ Reverse-engineer existing source code into OpenSpec main specs. The output is no
 
 **Feature-Sized Spec Rule**: Main specs MUST be split by feature, not by microservice or source folder. When the input is a microservice or service folder, every spec folder name MUST start with the normalized microservice/service folder name followed by `_`. If the service spans multiple business domains, use `openspec/specs/<microservice>_<domain>-<feature>/spec.md`. If the service focuses on one domain, or the service name already expresses the domain, use `openspec/specs/<microservice>_<feature>/spec.md`. All segments are lowercase kebab-case.
 
-**Microservice Prefix And Domain Split Rule**: For code-to-spec, the microservice name plus `_` is a required spec ID prefix. Do not replace that prefix with business-domain, external-system, protocol, resource, or sub-capability names discovered inside the service. When a service spans multiple domains, add a domain discriminator after the service prefix, for example `completion_agent-memory-chat`, `completion_mcp-server-config`, and `completion_notification-push-delivery`; do not generate `agent_memory-chat`, `mcp_server-config`, or `notification_push-delivery`. When a service already names the domain or focuses on only one domain, omit the extra domain discriminator but keep the `_` separator, for example `billing_invoice-search`.
+**Microservice Prefix And Domain Split Rule**: For openspec-code-to-spec, the microservice name plus `_` is a required spec ID prefix. Do not replace that prefix with business-domain, external-system, protocol, resource, or sub-capability names discovered inside the service. When a service spans multiple domains, add a domain discriminator after the service prefix, for example `completion_agent-memory-chat`, `completion_mcp-server-config`, and `completion_notification-push-delivery`; do not generate `agent_memory-chat`, `mcp_server-config`, or `notification_push-delivery`. When a service already names the domain or focuses on only one domain, omit the extra domain discriminator but keep the `_` separator, for example `billing_invoice-search`.
 
 **Backend-Associated Naming Rule**: Do NOT use implementation layers such as `frontend`, `ui`, `react`, `page`, or `component` as the service prefix or domain discriminator. Main specs must represent backend-associated product/service behavior: public APIs, streaming contracts, persistence, auth, jobs, data processing, or workflows backed by repository-owned services. Frontend code is evidence for user actions and visible outcomes, not the naming boundary itself. If the input is a frontend folder, trace its API calls, routes, events, config, and service clients to the owning backend/product capability and name specs from that capability. If no backend-associated behavior can be identified, skip spec generation and record an open question instead of creating a frontend-only spec.
 
@@ -76,7 +76,7 @@ This repository intentionally does not bundle upstream OpenSpec skills or comman
      - [ ] No domain-specific assumption was introduced unless the code exposes it as a contract.
 
 3. **Plan feature-sized spec partitioning first**
-   - Before writing specs, create `openspec/plannings/code-to-spec-<scope-slug>.md`.
+   - Before writing specs, create `openspec/plannings/openspec-code-to-spec-<scope-slug>.md`.
    - Use the planning template in `TEMPLATES.md`.
    - Partition by capability and use case, not by package, class, component, or file.
    - Choose spec folder names in `<microservice>_<domain>-<feature>` or `<microservice>_<feature>` format. Every segment MUST be lowercase kebab-case.
