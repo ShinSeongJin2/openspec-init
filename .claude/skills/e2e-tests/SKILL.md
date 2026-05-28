@@ -88,6 +88,7 @@ Read these files before creating or changing E2E outputs:
 - [COVERAGE_HTML_TEMPLATE.html](COVERAGE_HTML_TEMPLATE.html): HTML template for the AI-written spec coverage report.
 - [scripts/validate_e2e_outputs.py](scripts/validate_e2e_outputs.py): consistency checker. Run it after editing scenario docs or reports.
 - [scripts/evaluate_spec_coverage.mjs](scripts/evaluate_spec_coverage.mjs): OpenSpec traceability gate. Run it after Playwright results exist to verify Requirement/Scenario/Test/Screenshot coverage and update `coverage-summary.json`.
+- [scripts/review_compose_runtime.py](scripts/review_compose_runtime.py): Hybrid Runtime Rule pre-check. MUST be run BEFORE creating, editing, or booting `docker-compose.e2e.yml`. Emits WARNINGS (not errors) when Compose service entries look like repository-owned frontend or backend services. Warnings are informational because there are legitimate exceptions, but every warning must be either resolved (move the service to source-run) or explicitly justified in the execution summary as a user-approved app-container exception. Always invoke with `python -X utf8 ...` (or set `PYTHONIOENCODING=utf-8`) so the Korean warning text renders correctly on Windows consoles whose default code page is not UTF-8.
 - [../docx-user-manual/SKILL.md](../docx-user-manual/SKILL.md): screenshot evidence expectations for DOCX user manuals. Read it when E2E screenshots may later feed user manual generation.
 
 ## Workflow
@@ -173,6 +174,9 @@ Read these files before creating or changing E2E outputs:
 4. **Create or update deterministic infrastructure and source-run app startup**
    - Treat the root `docker-compose.e2e.yml` as mandatory for infrastructure dependencies only.
    - Create the file if it does not exist. If it exists, extend it without breaking unrelated suites.
+   - **Run the Compose runtime pre-check FIRST**, before any other Phase B work and before any `docker compose ... up`:
+     `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml`
+     This is a heuristic gate that flags Compose service entries that look like repository-owned frontend/backend services (Hybrid Runtime Rule violations). It returns WARNINGS, not errors. Every warning must be either (a) resolved by moving the service to a source-run command and removing it from Compose, or (b) explicitly justified as a user-approved app-container exception and documented in the execution summary. Re-run the script after any edit to `docker-compose.e2e.yml` and again immediately before boot in Step 5. Do not rely on the LLM to remember the rule mid-flow — let the script be the gate.
    - Compose must model stable infrastructure dependencies such as databases, graph stores, caches, queues, object storage, mail sinks, and external-service mocks. It MUST NOT Dockerize repository-owned frontend, backend, gateway, reverse proxy, worker, or BFF code unless the user explicitly approves an exception because no local source-run command exists.
    - Configure frontend API base URLs so browser requests flow through the source-run gateway/backend path, not through Playwright route interception for owned services.
    - Document or create suite-local scripts that start every application service from the working tree with deterministic environment variables pointing at the Dockerized infrastructure.
@@ -190,6 +194,7 @@ Read these files before creating or changing E2E outputs:
    - Add explicit health checks or readiness probes for services that Playwright or Sanity Check depends on.
    - Step checklist:
      - [ ] Root `docker-compose.e2e.yml` exists and includes the required infrastructure dependencies for every API-backed scenario.
+     - [ ] `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml` has been run; every emitted warning has been either resolved by source-running the flagged service or recorded as a user-approved exception in the execution summary.
      - [ ] Suite-specific seed files are under `openspec/specs/<spec-name>/e2e/seed_files/`.
      - [ ] `docker-compose.e2e.yml` includes required infrastructure dependencies only, unless an app-container exception is explicitly approved.
      - [ ] Repository-owned frontend/backend/gateway services have source-run commands or suite-local startup helpers.
@@ -201,6 +206,9 @@ Read these files before creating or changing E2E outputs:
      - [ ] Frontend browser coverage collection and report generation are configured, with source-map quality documented.
 
 5. **Boot infrastructure, start source-run services, and run Sanity Check**
+   - Re-run the Hybrid Runtime Rule pre-check immediately before boot:
+     `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml`
+     Every warning must already be either resolved or justified per Step 4. Do not boot Compose while unresolved/unjustified warnings remain.
    - Validate the compose file from the repository root with `docker compose -f docker-compose.e2e.yml config`.
    - Start infrastructure with `docker compose -f docker-compose.e2e.yml up -d` before writing Playwright tests. Add `--build` only when infrastructure images or suite-specific infrastructure overrides require it.
    - Start repository-owned app services from source using the documented commands or suite-local startup helpers after infrastructure is ready.
@@ -209,6 +217,7 @@ Read these files before creating or changing E2E outputs:
    - Fix compose, environment, seed, or readiness issues before adding or modifying Playwright specs.
    - Record Sanity Check commands and outcomes in the execution summary.
    - Step checklist:
+     - [ ] `python -X utf8 .claude/skills/e2e-tests/scripts/review_compose_runtime.py --compose docker-compose.e2e.yml` has been re-run and every warning is either resolved or recorded as a user-approved exception in the execution summary.
      - [ ] `docker compose -f docker-compose.e2e.yml config` passes.
      - [ ] `docker compose -f docker-compose.e2e.yml up -d` starts the required infrastructure containers.
      - [ ] Required infrastructure containers are healthy or explicitly ready.
