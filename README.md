@@ -100,17 +100,7 @@ your-project/
 └── ...
 ```
 
-**중요**: 이 저장소는 `.claude/commands`, upstream OpenSpec 기본 스킬, `docx` 기본 스킬을 포함하지 않습니다. OpenSpec 기본 기능은 설치된 OpenSpec CLI와 upstream 자료를 그대로 사용하고, 이 pack은 `openspec-code-to-spec`, `openspec-e2e`, `openspec-manual`만 추가합니다.
-
-### 4. DOCX 스킬 의존성 준비
-
-`openspec-manual`은 표준 `docx` 문서 스킬을 확장하는 방식으로 작성되어 있습니다. Claude Code에 document skills plugin이 없다면 다음 명령으로 설치하세요.
-
-```text
-/plugin install document-skills@anthropic-agent-skills
-```
-
-설치 후 스킬이 바로 보이지 않으면 `/reload-plugins`를 실행하거나 Claude Code를 다시 시작합니다. 하네스가 skill metadata의 `extends: docx` 힌트를 지원하면 의존 스킬을 자동으로 해석할 수 있지만, 그렇지 않은 환경에서는 위 plugin 설치가 필요합니다.
+**중요**: 이 저장소는 `.claude/commands`나 upstream OpenSpec 기본 스킬을 포함하지 않습니다. OpenSpec 기본 기능은 설치된 OpenSpec CLI와 upstream 자료를 그대로 사용하고, 이 pack은 `openspec-code-to-spec`, `openspec-e2e`, `openspec-manual`만 추가합니다.
 
 ---
 
@@ -427,10 +417,6 @@ A. 권장하지 않습니다. 대상 프로젝트를 `openspec init`으로 초�
 
 A. 폴더 전체를 덮어쓰기보다 `.claude/skills/openspec-code-to-spec`, `.claude/skills/openspec-e2e`, `.claude/skills/openspec-manual`만 기존 `.claude/skills/` 아래로 병합하세요. `.claude/commands`나 upstream OpenSpec 기본 스킬을 이 저장소에서 복사할 필요는 없습니다.
 
-**Q. `openspec-manual`을 쓰려면 `.claude/skills/docx`도 복사해야 하나요?**
-
-A. 아닙니다. 이 저장소는 `docx` 기본 스킬을 포함하지 않습니다. Claude Code의 document skills plugin을 설치해 `docx` 스킬을 제공하거나, 프로젝트에서 이미 사용하는 DOCX 생성 도구를 사용하세요.
-
 **Q. `openspec-code-to-spec`에 여러 폴더를 전달할 수 있나요?**
 
 A. 가능합니다. 예를 들어 `/openspec-code-to-spec services/billing services/auth`처럼 전달할 수 있습니다. 다만 스킬은 서비스 경계와 기능 경계를 먼저 나눈 뒤 여러 스펙으로 분리하려고 합니다.
@@ -503,4 +489,4 @@ openspec/config.yaml
 
 `openspec/config.yaml`은 한국어 작성 규칙, feature-sized spec 규칙, spec-local 산출물 배치 규칙을 담고 있습니다. 각 스킬의 `SKILL.md`는 Claude Code가 해당 작업을 수행할 때 따라야 할 워크플로와 품질 게이트를 정의합니다.
 
-이 저장소에는 `.claude/commands`, upstream OpenSpec 기본 스킬, `.claude/skills/docx`가 포함되지 않습니다. 해당 기능은 OpenSpec CLI 또는 Claude Code document skills plugin 같은 upstream 설치본을 사용하세요.
+이 저장소에는 `.claude/commands`나 upstream OpenSpec 기본 스킬이 포함되지 않습니다. 해당 기능은 OpenSpec CLI 같은 upstream 설치본을 사용하세요.

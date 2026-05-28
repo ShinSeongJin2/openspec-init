@@ -5,11 +5,10 @@ argument-hint: "<spec-name>"
 arguments: [spec_name]
 disable-model-invocation: true
 license: MIT
-compatibility: Requires Python with python-docx and Pillow, or an equivalent DOCX generation tool. Prefer an installed docx skill/tooling when available; this repository does not bundle the docx skill.
+compatibility: Requires Python with python-docx and Pillow, or an equivalent DOCX generation tool.
 metadata:
   author: project
   version: "1.0"
-  extends: docx
 ---
 
 # Evidence-Driven DOCX End-User Manual
@@ -35,18 +34,6 @@ Create a professional `.docx` user manual from product specs, scenario documents
 **Style Consistency Rule**: Use [STYLE_REFERENCE.py](STYLE_REFERENCE.py) as the default visual style baseline. It is a compressed copy of the previous polished manual generator with one representative user flow. Before writing or rewriting a generation script, read it and reuse its document structure, helper functions, spacing, table style, cover layout, heading colors, font choices, caption style, and page footer approach unless the user asks for a new design.
 
 **Workflow Gate Rule**: Execute the workflow strictly in order. Do not draft, generate, validate, or report a later-step output until the current step checklist passes. If a checklist item cannot pass because evidence is missing, screenshots are incomplete, product behavior is ambiguous, or the DOCX tooling fails, stop at that step and tell the user what failed, what evidence was checked, and what input or fix is needed.
-
-## External DOCX Skill Dependency
-
-This skill extends the standard `docx` document skill but does not vendor it. If a `docx` skill is already installed, read and use that skill's guidance for DOCX creation, validation, unpacking, and repair before generating the manual.
-
-If the `docx` skill is missing in Claude Code, tell the user to install the official document skills plugin:
-
-```text
-/plugin install document-skills@anthropic-agent-skills
-```
-
-After installation, ask the user to reload plugins or restart Claude Code if the skill is not immediately available. If the harness supports dependency resolution from skill metadata, the `metadata.extends: docx` hint above may be used to resolve that dependency automatically; otherwise the install command is the supported fallback.
 
 ## End-User Only Rule
 
@@ -83,7 +70,6 @@ Before writing the manual, read all relevant inputs the user provides:
 - UI automation or execution references: confirm exact user actions, visible labels, screenshots, and observable screen outcomes. Do not copy assertions, commands, or internal data.
 - Execution summaries/results: use them only to understand available screenshots and known evidence quality. Do not include run status, pass/fail counts, commands, report paths, or known test gaps in an end-user manual.
 - Screenshot directory under `openspec/specs/<spec-name>/e2e/results/screenshots/`: insert meaningful screenshots at the matching workflow sections.
-- Installed DOCX generation guidance or scripts, especially the external `docx` skill when available. Do not assume this repository bundles `.claude/skills/docx`.
 - [STYLE_REFERENCE.py](STYLE_REFERENCE.py): bundled style reference copied and compressed from the previous polished manual generator. Use it as the canonical layout, helper, table, caption, cover, and footer baseline.
 
 ## Output Contract
