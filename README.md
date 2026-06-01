@@ -62,6 +62,12 @@ openspec init
 .claude/skills/openspec-manual/
 ```
 
+검증·커버리지 없이 스크린샷만 빠르게 만드는 `openspec-e2e-fast`를 함께 쓰려면 다음 폴더도 복사합니다(선택).
+
+```text
+.claude/skills/openspec-e2e-fast/
+```
+
 대상 프로젝트 루트로 복사합니다.
 
 ```bash
@@ -69,6 +75,8 @@ mkdir -p your-project/.claude/skills
 cp -R .claude/skills/openspec-code-to-spec your-project/.claude/skills/
 cp -R .claude/skills/openspec-e2e your-project/.claude/skills/
 cp -R .claude/skills/openspec-manual your-project/.claude/skills/
+# 선택: 빠른 스크린샷 전용 변형
+cp -R .claude/skills/openspec-e2e-fast your-project/.claude/skills/
 ```
 
 Windows PowerShell 예시는 다음과 같습니다.
@@ -223,6 +231,8 @@ openspec/specs/<spec-name>/
 
 E2E 결과물은 단순 테스트 코드가 아니라 다음 단계의 사용자 매뉴얼을 만들기 위한 증거이기도 합니다. 특히 시나리오 문서와 스크린샷은 `openspec-manual`이 사용자 흐름과 화면 설명을 구성할 때 재사용합니다.
 
+검증, 커버리지, 추적성 리포트까지는 필요 없고 화면 스크린샷만 빠르게 확보하고 싶다면, 같은 스펙 기준으로 `openspec-e2e` 대신 `openspec-e2e-fast`를 사용할 수 있습니다. 자세한 차이와 사용법은 아래 [빠른 변형 — openspec-e2e-fast](#빠른-변형--openspec-e2e-fast)를 참고하세요.
+
 ### Step 3 — DOCX User Manual
 
 스펙과 E2E 산출물, 실제 화면 스크린샷을 바탕으로 최종 사용자가 읽을 수 있는 한국어 DOCX 매뉴얼을 생성합니다.
@@ -249,6 +259,79 @@ openspec/specs/<spec-name>/
 ```
 
 생성 스크립트가 함께 남기 때문에 스펙, 시나리오, 스크린샷이 바뀐 뒤에도 같은 스타일로 매뉴얼을 다시 만들 수 있습니다.
+
+---
+
+## 빠른 변형 — openspec-e2e-fast
+
+`openspec-e2e-fast`는 기존 `openspec-e2e`를 **최대한 빠르게 동작하도록 만든 속도 최적화 형제 스킬**입니다. 같은 OpenSpec 스펙을 입력으로 받지만, 검증·커버리지·추적성 같은 무겁고 느린 단계를 의도적으로 제거하고 **실행 가능한 Playwright 스크립트 1개와 체크포인트별 스크린샷**만 산출합니다. 즉, 테스트가 동작을 검증하는 대신 **사용자가 스크린샷을 직접 보고 검증**하는 모델입니다.
+
+### openspec-e2e와의 차이점
+
+`openspec-e2e`는 감사 수준의 증거(검증, 커버리지 게이트, 추적성 리포트)를 만드는 데 초점이 있고, `openspec-e2e-fast`는 검토용 스크린샷을 빠르게 얻는 데 초점이 있습니다. 주요 차이는 다음과 같습니다.
+
+| 항목 | `openspec-e2e` (느림 / 고품질) | `openspec-e2e-fast` (빠름 / 스크린샷 전용) |
+|---|---|---|
+| 검증 코드 | `expect(...)`, 상태/본문/UI 단언 사용 | **없음.** `expect`, `assert`, 응답 검증을 작성하지 않음 |
+| 검증 주체 | 테스트가 자동으로 검증 | **사용자가 스크린샷을 보고 검증** |
+| 커버리지 | 백엔드·프론트엔드 커버리지, Monocart, V8, 임계값 | **없음.** 커버리지 도구·`page.coverage` 미사용 |
+| 리포트/게이트 | `coverage-summary.json`, `spec-coverage-report.html`, 추적성·산출물 검증기 | **없음.** `evaluate_spec_coverage.mjs`·`validate_e2e_outputs.py` 미실행 |
+| 시나리오 문서 | `00-coverage-matrix.md` + 시나리오별 `.md` + 실행 요약 | **불필요.** 인라인 체크포인트 목록으로 충분 |
+| 느린 사용자 동작 | 실제 사용자 인터랙션을 그대로 재현 | 느리거나 불안정하면 **DOM 이벤트를 직접 발생**시켜 단축 |
+| 런타임 준비 | 인프라 부팅·검증, 전체 Sanity Check, compose 사전 점검 재실행 | **이미 떠 있는 런타임을 재사용**, 1분 스모크 체크만 수행 |
+| 산출물 | 시나리오·테스트·커버리지·리포트·매뉴얼 증거 | Playwright 스크립트 1개 + 체크포인트별 스크린샷 |
+
+반대로 다음과 같은 공통 규칙은 그대로 유지됩니다.
+
+- 스펙 폴더명을 suite slug로 보존하고, 산출물을 `openspec/specs/<spec-name>/e2e/` 아래에 둡니다.
+- 합성 테스터 HTML을 만들지 않고 **저장소의 실제 프론트엔드**를 소스에서 구동해 검증합니다.
+- 실제 프론트엔드가 소유 백엔드를 호출하는 **실제 서비스 경로**로 동작시키고, 외부 경계(LLM, 서드파티 API)만 필요할 때 스텁합니다.
+- 테스트 제목·체크포인트 이름은 한국어로 쓰고, 기술 식별자는 원문 유지합니다.
+
+### 언제 어떤 스킬을 쓰나
+
+- **`openspec-e2e-fast`**: 화면 흐름을 빠르게 확인하거나, 매뉴얼용 스크린샷 초안을 신속히 확보하고 싶을 때. 검증 정확성보다 속도가 중요할 때.
+- **`openspec-e2e`**: 단언, 커버리지 게이트, 추적성 증거, 감사 수준 리포트가 필요할 때. 나중에 이런 증거가 필요해지면 `openspec-e2e`로 전환하면 됩니다.
+
+### 사용법
+
+스펙 이름을 인자로 전달해 호출합니다. 인자를 생략하면 사용할 스펙 폴더명을 물어봅니다.
+
+```text
+/openspec-e2e-fast billing_invoice-search
+```
+
+```text
+/openspec-e2e-fast
+```
+
+자연어로도 요청할 수 있습니다.
+
+```text
+billing_invoice-search 스펙으로 검증 없이 화면 스크린샷만 빠르게 만들어줘
+```
+
+스킬은 다음 순서로 동작합니다.
+
+1. `spec.md`를 읽고 사용자에게 보이는 흐름만 추출한 뒤 suite slug를 스펙 폴더명으로 고정합니다.
+2. 스펙의 동작을 트리거하는 실제 프론트엔드 진입 경로를 찾아 스크린샷 체크포인트를 인라인으로 목록화합니다.
+3. 이미 떠 있는 런타임이 있으면 재사용하고, 없을 때만 최소 구동 후 약 1분 스모크 체크를 합니다.
+4. 검증 코드 없이 fast 스크립트를 작성합니다.
+5. 스크립트를 실행해 체크포인트별 스크린샷이 생성됐는지 확인합니다.
+
+**산출물**:
+
+```text
+openspec/specs/<spec-name>/
+└── e2e/
+    ├── tests/
+    │   └── <spec-name>.fast.spec.mjs
+    └── results/
+        └── screenshots/
+            └── NN-<체크포인트>.png
+```
+
+`openspec-e2e`와 달리 시나리오 문서, 커버리지 리포트, 실행 요약은 생성되지 않습니다. 검토는 산출된 스크린샷을 사람이 직접 보면서 진행합니다. 이렇게 만든 스크린샷도 `openspec/specs/<spec-name>/e2e/results/screenshots/` 규칙을 따르므로 이후 `openspec-manual`이 매뉴얼 초안을 만들 때 그대로 재사용할 수 있습니다.
 
 ---
 
@@ -474,6 +557,7 @@ OpenSpec 산출물까지 제거하려면 `openspec/` 폴더를 별도로 정리�
 .claude/skills/openspec-e2e/SKILL.md
 .claude/skills/openspec-e2e/OUTPUT_CONTRACT.md
 .claude/skills/openspec-e2e/TEMPLATES.md
+.claude/skills/openspec-e2e-fast/SKILL.md
 .claude/skills/openspec-manual/SKILL.md
 .claude/skills/openspec-manual/STYLE_REFERENCE.py
 ```
